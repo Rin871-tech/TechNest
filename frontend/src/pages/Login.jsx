@@ -107,7 +107,7 @@ function Login() {
         {/* Google Login */}
 
         <a
-          href="http://localhost:5000/api/auth/google"
+         href={`${import.meta.env.VITE_API_URL}/api/auth/google`}
           className="google-button"
         >
           <span className="google-icon">
