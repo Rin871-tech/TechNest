@@ -11,15 +11,25 @@ const API_URL = "http://localhost:5000/api/auth";
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
-    const savedUser = localStorage.getItem("technest-user");
-    return savedUser ? JSON.parse(savedUser) : null;
+    const savedUser =
+      localStorage.getItem("technest-user");
+
+    return savedUser
+      ? JSON.parse(savedUser)
+      : null;
   });
 
   const [token, setToken] = useState(() => {
     return localStorage.getItem("technest-token");
   });
 
-  // Save user to localStorage
+  const [loading, setLoading] = useState(true);
+
+
+  // ======================================================
+  // SAVE USER
+  // ======================================================
+
   useEffect(() => {
     if (user) {
       localStorage.setItem(
@@ -31,7 +41,11 @@ export function AuthProvider({ children }) {
     }
   }, [user]);
 
-  // Save token to localStorage
+
+  // ======================================================
+  // SAVE TOKEN
+  // ======================================================
+
   useEffect(() => {
     if (token) {
       localStorage.setItem(
@@ -43,7 +57,62 @@ export function AuthProvider({ children }) {
     }
   }, [token]);
 
+
+  // ======================================================
+  // REFRESH CURRENT USER FROM BACKEND
+  // ======================================================
+
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      if (!token) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const response = await fetch(
+          `${API_URL}/me`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(
+            data.message ||
+              "Authentication failed."
+          );
+        }
+
+        // This gets the latest role from MongoDB
+        setUser(data.user);
+
+      } catch (error) {
+        console.error(
+          "Authentication refresh failed:",
+          error
+        );
+
+        setUser(null);
+        setToken(null);
+
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCurrentUser();
+  }, [token]);
+
+
+  // ======================================================
   // REGISTER
+  // ======================================================
+
   const register = async (
     name,
     email,
@@ -53,9 +122,11 @@ export function AuthProvider({ children }) {
       `${API_URL}/register`,
       {
         method: "POST",
+
         headers: {
           "Content-Type": "application/json"
         },
+
         body: JSON.stringify({
           name,
           email,
@@ -76,7 +147,11 @@ export function AuthProvider({ children }) {
     return data;
   };
 
+
+  // ======================================================
   // LOGIN
+  // ======================================================
+
   const login = async (
     email,
     password
@@ -85,9 +160,11 @@ export function AuthProvider({ children }) {
       `${API_URL}/login`,
       {
         method: "POST",
+
         headers: {
           "Content-Type": "application/json"
         },
+
         body: JSON.stringify({
           email,
           password
@@ -107,7 +184,11 @@ export function AuthProvider({ children }) {
     return data;
   };
 
-  // LOGIN WITH GOOGLE JWT
+
+  // ======================================================
+  // GOOGLE LOGIN
+  // ======================================================
+
   const loginWithToken = async (
     googleToken
   ) => {
@@ -115,7 +196,8 @@ export function AuthProvider({ children }) {
       `${API_URL}/me`,
       {
         headers: {
-          Authorization: `Bearer ${googleToken}`
+          Authorization:
+            `Bearer ${googleToken}`
         }
       }
     );
@@ -135,11 +217,20 @@ export function AuthProvider({ children }) {
     return data;
   };
 
+
+  // ======================================================
   // LOGOUT
+  // ======================================================
+
   const logout = () => {
     setUser(null);
     setToken(null);
   };
+
+
+  // ======================================================
+  // AUTH CONTEXT
+  // ======================================================
 
   return (
     <AuthContext.Provider
@@ -150,6 +241,7 @@ export function AuthProvider({ children }) {
         login,
         loginWithToken,
         logout,
+        loading,
         isAuthenticated: !!token
       }}
     >
@@ -157,6 +249,7 @@ export function AuthProvider({ children }) {
     </AuthContext.Provider>
   );
 }
+
 
 export function useAuth() {
   return useContext(AuthContext);

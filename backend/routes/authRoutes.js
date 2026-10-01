@@ -58,7 +58,8 @@ router.post("/register", async (req, res) => {
     const user = await User.create({
       name,
       email: email.toLowerCase(),
-      password: hashedPassword
+      password: hashedPassword,
+      role: "CUSTOMER"
     });
 
     const token = jwt.sign(
@@ -80,12 +81,17 @@ router.post("/register", async (req, res) => {
       user: {
         id: user._id,
         name: user.name,
-        email: user.email
+        email: user.email,
+        role: user.role,
+        avatar: user.avatar
       }
     });
 
   } catch (error) {
-    console.error(error);
+    console.error(
+      "Registration error:",
+      error
+    );
 
     res.status(500).json({
       message:
@@ -163,12 +169,17 @@ router.post("/login", async (req, res) => {
       user: {
         id: user._id,
         name: user.name,
-        email: user.email
+        email: user.email,
+        role: user.role,
+        avatar: user.avatar
       }
     });
 
   } catch (error) {
-    console.error(error);
+    console.error(
+      "Login error:",
+      error
+    );
 
     res.status(500).json({
       message:
@@ -183,7 +194,6 @@ router.post("/login", async (req, res) => {
 // ======================================================
 
 router.get("/google", (req, res) => {
-
   const authUrl =
     googleClient.generateAuthUrl({
       access_type: "offline",
@@ -208,9 +218,7 @@ router.get("/google", (req, res) => {
 router.get(
   "/google/callback",
   async (req, res) => {
-
     try {
-
       const {
         code
       } = req.query;
@@ -256,7 +264,6 @@ router.get(
 
       // Create new Google user
       if (!user) {
-
         user = await User.create({
           name:
             name || "TechNest User",
@@ -269,15 +276,14 @@ router.get(
           avatar:
             picture || null,
 
-          password: null
-        });
+          password: null,
 
+          role: "CUSTOMER"
+        });
       }
 
-      // Connect Google to an existing
-      // email/password account
+      // Connect Google to existing account
       else if (!user.googleId) {
-
         user.googleId = googleId;
 
         user.avatar =
@@ -304,7 +310,6 @@ router.get(
       );
 
     } catch (error) {
-
       console.error(
         "Google OAuth error:",
         error
@@ -326,9 +331,7 @@ router.get(
   "/me",
   authMiddleware,
   async (req, res) => {
-
     try {
-
       const user =
         await User.findById(
           req.userId
@@ -346,13 +349,16 @@ router.get(
           id: user._id,
           name: user.name,
           email: user.email,
-          avatar: user.avatar
+          avatar: user.avatar,
+          role: user.role
         }
       });
 
     } catch (error) {
-
-      console.error(error);
+      console.error(
+        "Fetch current user error:",
+        error
+      );
 
       res.status(500).json({
         message:

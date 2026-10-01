@@ -1,69 +1,87 @@
-import { Link } from "react-router-dom";
-import { useCart } from "../context/CartContext";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useCart } from "../context/CartContext";
 
-function Navbar() {
-  const { totalItems } = useCart();
+const Navbar = () => {
+  const { user, logout } = useAuth();
+  const { cart } = useCart();
+  const navigate = useNavigate();
 
-  const {
-    user,
-    logout,
-    isAuthenticated
-  } = useAuth();
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+  };
 
   return (
     <nav className="navbar">
+      <div className="navbar-inner">
 
-      <Link
-        to="/"
-        className="logo"
-      >
-        Tech<span>Nest</span>
-      </Link>
-
-      <div className="nav-links">
-
-        <Link to="/">
-          Home
+        {/* Logo */}
+        <Link to="/" className="navbar-logo">
+          TechNest
         </Link>
 
-        <Link to="/products">
-          Products
-        </Link>
+        {/* Navigation */}
+        <div className="navbar-links">
 
-        <Link to="/cart">
-          Cart
-
-          {totalItems > 0 && (
-            <span className="cart-count">
-              {totalItems}
-            </span>
-          )}
-        </Link>
-
-        {isAuthenticated ? (
-          <>
-            <Link to="/account">
-              Hi, {user?.name?.split(" ")[0]}
-            </Link>
-
-            <button
-              className="logout-button"
-              onClick={logout}
-            >
-              Logout
-            </button>
-          </>
-        ) : (
-          <Link to="/login">
-            Login
+          <Link to="/">
+            Home
           </Link>
-        )}
+
+          <Link to="/products">
+            Products
+          </Link>
+
+          <Link to="/cart">
+            Cart
+
+            {cart.length > 0 && (
+              <span className="cart-count">
+                {cart.length}
+              </span>
+            )}
+          </Link>
+
+          {user ? (
+            <>
+              <Link to="/account">
+                {user.name}
+              </Link>
+
+              {/* Admin link only for ADMIN users */}
+              {user.role === "ADMIN" && (
+                <Link
+                  to="/admin"
+                  className="admin-nav-link"
+                >
+                  Admin
+                </Link>
+              )}
+
+              <button
+                className="navbar-logout"
+                onClick={handleLogout}
+              >
+                Logout
+              </button>
+            </>
+          ) : (
+            <>
+              <Link to="/login">
+                Login
+              </Link>
+
+              <Link to="/register">
+                Register
+              </Link>
+            </>
+          )}
+
+        </div>
 
       </div>
-
     </nav>
   );
-}
+};
 
 export default Navbar;

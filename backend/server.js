@@ -9,6 +9,7 @@ require("dotenv").config();
 const productRoutes = require("./routes/productRoutes");
 const authRoutes = require("./routes/authRoutes");
 const orderRoutes = require("./routes/orderRoutes");
+const adminRoutes = require("./routes/adminRoutes");
 
 const app = express();
 
@@ -87,7 +88,7 @@ app.use(
   "/api/orders",
   orderRoutes
 );
-
+app.use("/api/admin", adminRoutes);
 
 // ======================================================
 // HEALTH CHECK

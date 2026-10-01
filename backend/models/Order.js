@@ -7,31 +7,66 @@ const orderItemSchema = new mongoose.Schema(
       ref: "Product",
       required: true
     },
-
     name: {
       type: String,
       required: true
     },
-
     image: {
       type: String,
       required: true
     },
-
     price: {
       type: Number,
       required: true
     },
-
     quantity: {
       type: Number,
       required: true,
       min: 1
     }
   },
+  { _id: false }
+);
+
+const aiInsightSchema = new mongoose.Schema(
   {
-    _id: false
-  }
+    customerType: {
+      type: String,
+      default: null
+    },
+
+    purchaseIntent: {
+      type: String,
+      default: null
+    },
+
+    complementaryCategories: {
+      type: [String],
+      default: []
+    },
+
+    customerInsight: {
+      type: String,
+      default: null
+    },
+
+    adminRecommendation: {
+      type: String,
+      default: null
+    },
+
+    orderPriority: {
+      type: String,
+      enum: ["LOW", "NORMAL", "HIGH"],
+      default: "NORMAL"
+    },
+
+    generatedAt: {
+      type: Date,
+      default: null
+    }
+  },
+  { _id: false }
 );
 
 const orderSchema = new mongoose.Schema(
@@ -52,27 +87,22 @@ const orderSchema = new mongoose.Schema(
         type: String,
         required: true
       },
-
       address: {
         type: String,
         required: true
       },
-
       city: {
         type: String,
         required: true
       },
-
       state: {
         type: String,
         required: true
       },
-
       pincode: {
         type: String,
         required: true
       },
-
       phone: {
         type: String,
         required: true
@@ -102,17 +132,14 @@ const orderSchema = new mongoose.Schema(
 
     paymentStatus: {
       type: String,
-      enum: [
-        "PENDING",
-        "PAID",
-        "FAILED"
-      ],
+      enum: ["PENDING", "PAID", "FAILED"],
       default: "PENDING"
     },
+
     stockRestored: {
-  type: Boolean,
-  default: false
-},
+      type: Boolean,
+      default: false
+    },
 
     orderStatus: {
       type: String,
@@ -124,6 +151,11 @@ const orderSchema = new mongoose.Schema(
         "CANCELLED"
       ],
       default: "PLACED"
+    },
+
+    aiInsight: {
+      type: aiInsightSchema,
+      default: null
     }
   },
   {
@@ -131,5 +163,4 @@ const orderSchema = new mongoose.Schema(
   }
 );
 
-module.exports =
-  mongoose.model("Order", orderSchema);
+module.exports = mongoose.model("Order", orderSchema);
